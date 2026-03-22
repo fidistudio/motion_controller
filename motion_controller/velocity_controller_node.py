@@ -34,11 +34,11 @@ class ProportionalVelocityController(Node):
     # ------------------------------------------------------------------
 
     def _declare_parameters(self) -> None:
-        self.declare_parameter("angular_gain", 4.0)
+        self.declare_parameter("angular_gain", 1.0)
         self.declare_parameter("linear_gain", 1.0)
         self.declare_parameter("goal_vector_tolerance", 1e-6)
-        self.declare_parameter("max_linear_velocity", 2.5)
-        self.declare_parameter("max_angular_velocity", 5.0)
+        self.declare_parameter("max_linear_velocity", 0.5)
+        self.declare_parameter("max_angular_velocity", 3.0)
 
     # ------------------------------------------------------------------
     # Callbacks
@@ -78,22 +78,20 @@ class ProportionalVelocityController(Node):
         max_linear = self.get_parameter("max_linear_velocity").value
         max_angular = self.get_parameter("max_angular_velocity").value
 
+        # Ángulo del vector respecto al eje X del robot (eje frontal)
+        angle_error = math.atan2(fy, fx)
+
+        # Velocidad lineal proporcional a qué tan alineado está el robot
+        # cos(angle_error): 1 si apunta recto, 0 si es perpendicular, nunca negativo
+        magnitude = math.hypot(fx, fy)
+        alignment = math.cos(angle_error)  # ∈ [-1, 1]
+        linear = linear_gain * magnitude * max(alignment, 0.0)
+
         cmd = Twist()
-
-        # Adelante / atrás
-        cmd.linear.x = self._clamp(
-            linear_gain * fx,
-            -max_linear,
-            max_linear,
-        )
-
-        # Giro proporcional al error lateral
+        cmd.linear.x = self._clamp(linear, 0.0, max_linear)  # solo hacia adelante
         cmd.angular.z = self._clamp(
-            angular_gain * fy,
-            -max_angular,
-            max_angular,
+            angular_gain * angle_error, -max_angular, max_angular
         )
-
         return cmd
 
     # ------------------------------------------------------------------
