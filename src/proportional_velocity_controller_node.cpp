@@ -28,9 +28,6 @@ ProportionalVelocityControllerNode::ProportionalVelocityControllerNode(
 
   cmd_pub_ = create_publisher<geometry_msgs::msg::Twist>(cmd_topic, 10);
 
-  timer_ = create_wall_timer(std::chrono::milliseconds(50),
-                             [this]() { controlLoop(); });
-
   RCLCPP_INFO(get_logger(), "ProportionalVelocityControllerNode ready");
 }
 
@@ -40,9 +37,7 @@ ProportionalVelocityControllerNode::ProportionalVelocityControllerNode(
 void ProportionalVelocityControllerNode::onDescentVector(
     const robot_interfaces::msg::Force2D &msg) {
   descent_vector_ = msg;
-}
 
-void ProportionalVelocityControllerNode::controlLoop() {
   if (!descent_vector_.has_value()) {
     return;
   }

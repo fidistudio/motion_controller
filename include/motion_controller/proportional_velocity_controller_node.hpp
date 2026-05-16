@@ -27,7 +27,6 @@ public:
 private:
   // ── Callbacks ──────────────────────────────────────────────────────────────
   void onDescentVector(const robot_interfaces::msg::Force2D &msg);
-  void controlLoop();
 
   // ── Helpers ────────────────────────────────────────────────────────────────
   [[nodiscard]] VelocityControllerParams readParams() const;
@@ -39,7 +38,6 @@ private:
   // ── ROS interfaces ─────────────────────────────────────────────────────────
   rclcpp::Subscription<robot_interfaces::msg::Force2D>::SharedPtr vector_sub_;
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr cmd_pub_;
-  rclcpp::TimerBase::SharedPtr timer_;
 };
 
 } // namespace motion_controller
